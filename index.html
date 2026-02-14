@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Secret</title>
+
+<style>
+*{box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+
+body{
+margin:0;
+background:linear-gradient(135deg,#ffe6f2,#fff5fa);
+color:#333;
+overflow-x:hidden;
+transition:0.5s;
+}
+
+section{
+display:none;
+min-height:100vh;
+padding:40px 20px;
+animation:fade 0.7s ease;
+}
+
+@keyframes fade{
+from{opacity:0;transform:translateY(15px);}
+to{opacity:1;transform:translateY(0);}
+}
+
+h1,h2{text-align:center;}
+
+button{
+background:#ff6b9a;
+color:white;
+border:none;
+padding:10px 18px;
+border-radius:25px;
+margin:6px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+cursor:pointer;
+position:relative;
+}
+
+textarea{
+width:100%;
+height:120px;
+border-radius:15px;
+border:1px solid #ffd6e7;
+padding:10px;
+}
+
+img{
+max-width:100%;
+border-radius:20px;
+margin-top:15px;
+box-shadow:0 15px 40px rgba(0,0,0,0.25);
+}
+
+.main-image{
+position:relative;
+overflow:hidden;
+border-radius:25px;
+}
+
+.lock{
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+input[type=password],input[type=text]{
+padding:10px;
+border-radius:20px;
+border:1px solid #ccc;
+}
+</style>
+</head>
+
+<body>
+
+<section id="lock" style="display:block;">
+<div class="lock">
+<h2>Private Access</h2>
+<input type="password" id="pass" placeholder="Enter Passcode">
+<button onclick="unlock()">Unlock</button>
+</div>
+</section>
+
+<section id="valentine">
+<h2>Will You Be My Valentine?</h2>
+<div style="text-align:center;">
+<button id="yesBtn" onclick="openApp()">Yes 💖</button>
+<button id="noBtn" onclick="moveNo()">No 🙈</button>
+</div>
+<p id="sureText" style="text-align:center;color:#ff4d6d;"></p>
+</section>
+
+<section id="main">
+
+<h1>Happy Valentine’s Day</h1>
+
+<!-- YOUR UPLOADED IMAGE -->
+<input type="file" id="mainPic">
+<div class="main-image" id="mainImage"></div>
+
+<h2>Thank You Message</h2>
+<textarea id="thank"></textarea>
+<button onclick="saveText('thank')">Save</button>
+
+<h2>What It Feels Like To Be With You</h2>
+<textarea id="feel"></textarea>
+<button onclick="saveText('feel')">Save</button>
+
+<h2>Our Little Corner</h2>
+<input type="file" id="memUpload" multiple>
+<div id="gallery"></div>
+
+<h2>50 Reasons I Love You</h2>
+<div id="reasons"></div>
+
+<h2>Countdown to 2 September</h2>
+<div id="count"></div>
+
+<h3 style="text-align:center;margin-top:40px;">
+Forever us. Always.
+</h3>
+
+</section>
+
+<script>
+
+const PASS = "2357";
+
+function unlock(){
+const input = document.getElementById("pass").value;
+if(input === PASS){
+document.getElementById("lock").style.display = "none";
+document.getElementById("valentine").style.display = "block";
+}else{
+alert("Wrong Passcode");
+}
+}
+
+/* PLAYFUL NO BUTTON */
+let toggle = false;
+function moveNo(){
+const noBtn = document.getElementById("noBtn");
+const yesBtn = document.getElementById("yesBtn");
+const text = document.getElementById("sureText");
+
+text.innerText = "Are you sure? 😏";
+
+if(!toggle){
+noBtn.style.position = "absolute";
+noBtn.style.left = Math.random()*200 + "px";
+noBtn.style.top = Math.random()*200 + "px";
+}else{
+noBtn.style.position = "static";
+}
+toggle = !toggle;
+}
+
+function openApp(){
+document.getElementById("valentine").style.display="none";
+document.getElementById("main").style.display="block";
+}
+
+/* SAVE TEXT */
+function saveText(id){
+localStorage.setItem(id,document.getElementById(id).value);
+}
+
+window.onload=function(){
+document.getElementById("thank").value=localStorage.getItem("thank")||"";
+document.getElementById("feel").value=localStorage.getItem("feel")||"";
+loadGallery();
+loadReasons();
+loadMainPic();
+}
+
+/* MAIN IMAGE UPLOAD */
+document.getElementById("mainPic").onchange=function(){
+const r=new FileReader();
+r.onload=function(){
+localStorage.setItem("mainPic",r.result);
+loadMainPic();
+}
+r.readAsDataURL(this.files[0]);
+}
+
+function loadMainPic(){
+if(localStorage.getItem("mainPic")){
+document.getElementById("mainImage").innerHTML=
+`<img src="${localStorage.getItem("mainPic")}">`;
+}
+}
+
+/* GALLERY */
+document.getElementById("memUpload").onchange=function(){
+let arr=JSON.parse(localStorage.getItem("mem")||"[]");
+Array.from(this.files).forEach(f=>{
+const r=new FileReader();
+r.onload=function(){
+arr.push(r.result);
+localStorage.setItem("mem",JSON.stringify(arr));
+loadGallery();
+}
+r.readAsDataURL(f);
+});
+}
+
+function loadGallery(){
+let arr=JSON.parse(localStorage.getItem("mem")||"[]");
+document.getElementById("gallery").innerHTML="";
+arr.forEach(i=>{
+document.getElementById("gallery").innerHTML+=`<img src="${i}">`;
+});
+}
+
+/* COUNTDOWN WITH MONTHS */
+setInterval(()=>{
+let now=new Date();
+let target=new Date("Sep 2, 2026 00:00:00");
+
+let totalMonths = (target.getFullYear()-now.getFullYear())*12 + (target.getMonth()-now.getMonth());
+let tempDate = new Date(now);
+tempDate.setMonth(tempDate.getMonth()+totalMonths);
+
+if(tempDate > target){
+totalMonths--;
+tempDate.setMonth(tempDate.getMonth()-1);
+}
+
+let diff = target - tempDate;
+
+let d=Math.floor(diff/(1000*60*60*24));
+let h=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+let m=Math.floor((diff%(1000*60*60))/(1000*60));
+let s=Math.floor((diff%(1000*60))/1000);
+
+document.getElementById("count").innerHTML=
+`${totalMonths} Months ${d} Days ${h} Hours ${m} Minutes ${s} Seconds`;
+},1000);
+
+/* 50 REASONS */
+function loadReasons(){
+let html="";
+for(let i=1;i<=50;i++){
+html+=`<p>${i}. You make my world softer and brighter.</p>`;
+}
+document.getElementById("reasons").innerHTML=html;
+}
+
+</script>
+
+</body>
+</html>
